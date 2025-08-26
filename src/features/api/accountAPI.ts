@@ -23,4 +23,26 @@ export const registerUser = createAsyncThunk(
         const token = createToken(user.login, user.password);
         return {user:data, token};
     }
+)//todo hw endpoint/account/login
+export const fetchUser = createAsyncThunk(
+    'user/fetch',
+    async (token:string) => {
+        const response = await fetch(`${base_url}/account/fetch`, {
+            method: "POST",
+            headers: {
+                Authorization:token,
+            },
+
+        });
+        if (response.status === 401) {
+            throw new Error(`Invalid credentials`);
+        }
+        if (!response.ok){
+            throw new Error(`Something went wrong`);
+        }
+        const data = await response.json();
+        return {user:data, token};
+
+    }
+
 )
