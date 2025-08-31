@@ -1,10 +1,11 @@
 import {createAsyncThunk} from "@reduxjs/toolkit";
-import type { UserRegister} from "../../utils/types";
+import type {UserData, UserRegister} from "../../utils/types";
 import {base_url, createToken} from "../../utils/constants.ts";
+import type {RootState} from "../../app/store.ts";
 
 export const registerUser = createAsyncThunk(
     'user/registerUser',
-    async (user:UserRegister) => {
+    async (user: UserRegister) => {
         const response = await fetch(`${base_url}/account/register`, {
             method: "POST",
             headers: {
@@ -21,28 +22,69 @@ export const registerUser = createAsyncThunk(
         }
         const data = await response.json();
         const token = createToken(user.login, user.password);
-        return {user:data, token};
+        return {user: data, token};
     }
-)//todo hw endpoint/account/login
+)
 export const fetchUser = createAsyncThunk(
     'user/fetch',
-    async (token:string) => {
-        const response = await fetch(`${base_url}/account/fetch`, {
+    async (token: string) => {
+        const response = await fetch(`${base_url}/account/login`, {
             method: "POST",
             headers: {
-                Authorization:token,
+                Authorization: token,
             },
 
         });
         if (response.status === 401) {
             throw new Error(`Invalid credentials`);
         }
-        if (!response.ok){
+        if (!response.ok) {
             throw new Error(`Something went wrong`);
         }
         const data = await response.json();
-        return {user:data, token};
+        return {user: data, token};
 
     }
+)
 
+export const updateUser = createAsyncThunk<UserData, UserData, { state: RootState }>(
+    'user/update',
+    async (user, {getState}) => {
+        const response = await fetch(`${base_url}/account/user/${getState().user.login}`, {
+            method: "PATCH",
+            headers: {
+                'Content-Type': 'application/json',
+                Autorization: getState().token,
+            },
+            body: JSON.stringify(user),
+        })
+        if (response.status === 401) {
+            throw new Error(`Invalid credentials`);
+        }
+        if (!response.ok) {
+            throw new Error(`Something went wrong`);
+        }
+        const {firstName, lastName} = await response.json();
+        return {firstName, lastName};
+    }
+)
+
+export const changePassword = createAsyncThunk <string, string, {state:RootState}>(
+    'user/changePassword',
+    async (newPassword, {getState}) => {
+        const response = await fetch(`${base_url}/account/changePassword`, {
+            method: "PATCH",
+            headers: {
+                Authorization: getState().token,
+                'X-Password': newPassword
+            }
+        })
+        if (response.status === 401) {
+            throw new Error(`Invalid credentials`);
+        }
+        if (!response.ok) {
+            throw new Error(`Something went wrong`);
+        }
+        return createToken(getState().user.login, newPassword);
+    }
 )
