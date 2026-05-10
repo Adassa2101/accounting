@@ -3,28 +3,23 @@ import {useAppDispatch} from "../../app/hooks.ts";
 import {updateUser} from "../../features/api/accountAPI.ts";
 
 
-
 interface EditProfileProps {
     close: () => void;
 }
-
 
 const EditProfile = ({close}: EditProfileProps) => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const  dispatch = useAppDispatch();
 
-
     const handleClickSave = () => {
      dispatch(updateUser( {firstName, lastName}));
     }
-
 
     const handleClickClear = () => {
         setFirstName('');
         setLastName('');
     }
-
 
     return (
         <>
@@ -49,6 +44,5 @@ const EditProfile = ({close}: EditProfileProps) => {
         </>
     );
 };
-
 
 export default EditProfile;
